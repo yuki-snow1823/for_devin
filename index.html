@@ -28,47 +28,57 @@
         
         h1 {
             margin-top: 0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             color: #333;
         }
         
-        .color-input {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .color-input-container {
+            position: relative;
+            margin: 0 auto;
+            width: 200px;
             margin-bottom: 1.5rem;
         }
         
+        .color-input {
+            width: 100%;
+            font-size: 1.1rem;
+            border: none;
+            border-bottom: 1px solid #333;
+            padding: 0.5rem 0;
+            outline: none;
+            background: transparent;
+            padding-right: 40px;
+        }
+        
+        .color-picker-icon {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+        }
+        
         input[type="color"] {
-            width: 60px;
-            height: 60px;
-            border: none;
-            border-radius: 5px;
-            margin-right: 1rem;
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
             cursor: pointer;
         }
         
-        input[type="text"] {
-            padding: 0.5rem;
-            font-size: 1rem;
+        .color-picker-display {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 120px;
-        }
-        
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #45a049;
+            overflow: hidden;
         }
         
         .color-history {
@@ -91,65 +101,107 @@
 <body>
     <div class="container">
         <h1>カラーピッカー</h1>
-        <div class="color-input">
-            <input type="color" id="colorPicker" value="#ffffff">
-            <input type="text" id="colorCode" value="#ffffff" placeholder="#000000">
+        <div class="color-input-container">
+            <input type="text" class="color-input" id="colorCode" placeholder="#FFFFFF" value="#FFFFFF">
+            <div class="color-picker-icon">
+                <div class="color-picker-display" id="colorPickerDisplay"></div>
+                <input type="color" id="colorPicker" value="#FFFFFF">
+            </div>
         </div>
-        <button id="applyColor">適用</button>
         <div class="color-history" id="colorHistory"></div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const colorPicker = document.getElementById('colorPicker');
+            const colorPickerDisplay = document.getElementById('colorPickerDisplay');
             const colorCode = document.getElementById('colorCode');
-            const applyButton = document.getElementById('applyColor');
             const colorHistory = document.getElementById('colorHistory');
             const body = document.body;
             const maxHistoryItems = 10;
             let colorHistoryArray = [];
 
+            // カラーピッカーの表示を更新
+            function updateColorPickerDisplay() {
+                colorPickerDisplay.style.backgroundColor = colorPicker.value;
+            }
+
+            // 初期表示を設定
+            updateColorPickerDisplay();
+
             // カラーピッカーの値が変更されたとき
             colorPicker.addEventListener('input', function() {
-                colorCode.value = colorPicker.value;
+                const color = colorPicker.value;
+                colorCode.value = color;
+                updateColorPickerDisplay();
+                applyColorToBackground(color);
             });
 
             // カラーコードが変更されたとき
             colorCode.addEventListener('input', function() {
-                // 入力が有効なカラーコードかチェック
-                if (/^#[0-9A-F]{6}$/i.test(colorCode.value)) {
-                    colorPicker.value = colorCode.value;
+                let color = colorCode.value;
+                
+                // #がない場合は追加
+                if (color.length > 0 && color.charAt(0) !== '#') {
+                    color = '#' + color;
+                    colorCode.value = color;
+                }
+                
+                // 有効なカラーコードかチェック
+                if (/^#[0-9A-F]{6}$/i.test(color)) {
+                    colorPicker.value = color;
+                    updateColorPickerDisplay();
+                    applyColorToBackground(color);
                 }
             });
-
-            // 適用ボタンがクリックされたとき
-            applyButton.addEventListener('click', applyColorToBackground);
 
             // Enterキーが押されたとき
             colorCode.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    applyColorToBackground();
+                    const color = validateAndFormatColor(colorCode.value);
+                    if (color) {
+                        colorCode.value = color;
+                        colorPicker.value = color;
+                        updateColorPickerDisplay();
+                        applyColorToBackground(color);
+                    }
                 }
             });
 
-            // 背景色を適用する関数
-            function applyColorToBackground() {
-                let color = colorCode.value;
+            // フォーカスが外れたとき
+            colorCode.addEventListener('blur', function() {
+                const color = validateAndFormatColor(colorCode.value);
+                if (color) {
+                    colorCode.value = color;
+                    colorPicker.value = color;
+                    updateColorPickerDisplay();
+                    applyColorToBackground(color);
+                }
+            });
+
+            // カラーコードを検証してフォーマットする関数
+            function validateAndFormatColor(value) {
+                let color = value;
                 
                 // #がない場合は追加
-                if (color.charAt(0) !== '#') {
+                if (color.length > 0 && color.charAt(0) !== '#') {
                     color = '#' + color;
                 }
                 
                 // 有効なカラーコードかチェック
                 if (/^#[0-9A-F]{6}$/i.test(color)) {
-                    body.style.backgroundColor = color;
-                    colorPicker.value = color;
-                    colorCode.value = color;
-                    addToColorHistory(color);
-                } else {
+                    return color;
+                } else if (color.length > 0) {
                     alert('有効なカラーコードを入力してください（例: #FF0000）');
+                    return null;
                 }
+                return null;
+            }
+
+            // 背景色を適用する関数
+            function applyColorToBackground(color) {
+                body.style.backgroundColor = color;
+                addToColorHistory(color);
             }
 
             // 色履歴に追加する関数
@@ -180,6 +232,7 @@
                     swatch.addEventListener('click', function() {
                         colorPicker.value = color;
                         colorCode.value = color;
+                        updateColorPickerDisplay();
                         body.style.backgroundColor = color;
                     });
                     
