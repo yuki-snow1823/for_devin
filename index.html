@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カラーピッカー</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        h1 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .color-input {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        input[type="color"] {
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 1rem;
+            cursor: pointer;
+        }
+        
+        input[type="text"] {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 120px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .color-history {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>カラーピッカー</h1>
+        <div class="color-input">
+            <input type="color" id="colorPicker" value="#ffffff">
+            <input type="text" id="colorCode" value="#ffffff" placeholder="#000000">
+        </div>
+        <button id="applyColor">適用</button>
+        <div class="color-history" id="colorHistory"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorPicker = document.getElementById('colorPicker');
+            const colorCode = document.getElementById('colorCode');
+            const applyButton = document.getElementById('applyColor');
+            const colorHistory = document.getElementById('colorHistory');
+            const body = document.body;
+            const maxHistoryItems = 10;
+            let colorHistoryArray = [];
+
+            // カラーピッカーの値が変更されたとき
+            colorPicker.addEventListener('input', function() {
+                colorCode.value = colorPicker.value;
+            });
+
+            // カラーコードが変更されたとき
+            colorCode.addEventListener('input', function() {
+                // 入力が有効なカラーコードかチェック
+                if (/^#[0-9A-F]{6}$/i.test(colorCode.value)) {
+                    colorPicker.value = colorCode.value;
+                }
+            });
+
+            // 適用ボタンがクリックされたとき
+            applyButton.addEventListener('click', applyColorToBackground);
+
+            // Enterキーが押されたとき
+            colorCode.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyColorToBackground();
+                }
+            });
+
+            // 背景色を適用する関数
+            function applyColorToBackground() {
+                let color = colorCode.value;
+                
+                // #がない場合は追加
+                if (color.charAt(0) !== '#') {
+                    color = '#' + color;
+                }
+                
+                // 有効なカラーコードかチェック
+                if (/^#[0-9A-F]{6}$/i.test(color)) {
+                    body.style.backgroundColor = color;
+                    colorPicker.value = color;
+                    colorCode.value = color;
+                    addToColorHistory(color);
+                } else {
+                    alert('有効なカラーコードを入力してください（例: #FF0000）');
+                }
+            }
+
+            // 色履歴に追加する関数
+            function addToColorHistory(color) {
+                // 既に同じ色が履歴にある場合は追加しない
+                if (!colorHistoryArray.includes(color)) {
+                    colorHistoryArray.unshift(color);
+                    
+                    // 最大数を超えたら古いものを削除
+                    if (colorHistoryArray.length > maxHistoryItems) {
+                        colorHistoryArray.pop();
+                    }
+                    
+                    updateColorHistoryDisplay();
+                }
+            }
+
+            // 色履歴の表示を更新する関数
+            function updateColorHistoryDisplay() {
+                colorHistory.innerHTML = '';
+                
+                colorHistoryArray.forEach(color => {
+                    const swatch = document.createElement('div');
+                    swatch.className = 'color-swatch';
+                    swatch.style.backgroundColor = color;
+                    swatch.title = color;
+                    
+                    swatch.addEventListener('click', function() {
+                        colorPicker.value = color;
+                        colorCode.value = color;
+                        body.style.backgroundColor = color;
+                    });
+                    
+                    colorHistory.appendChild(swatch);
+                });
+            }
+
+            // 初期色を適用
+            body.style.backgroundColor = colorPicker.value;
+        });
+    </script>
+</body>
+</html>
