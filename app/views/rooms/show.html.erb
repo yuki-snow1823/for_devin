@@ -1,0 +1,112 @@
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2 class="text-center">ゲームルーム #<%= @room.id %></h2>
+      </div>
+      <div class="card-body">
+        <% if @room.players.count < 2 %>
+          <div class="alert alert-info text-center">
+            対戦相手を待っています...
+          </div>
+        <% else %>
+          <% current_player = @room.players.find_by(user: current_user) || @room.players.first %>
+          <% opponent = @room.opponent_of(current_player) %>
+          
+          <div class="mb-4">
+            <h3>質問と回答</h3>
+            <% @questions.each do |question| %>
+              <div class="card mb-3">
+                <div class="card-header">
+                  <%= question.content %>
+                </div>
+                <div class="card-body">
+                  <% if response = current_player.response_for(question) %>
+                    <div class="alert alert-success">
+                      あなたの回答: <%= response.answer_text %>
+                    </div>
+                  <% else %>
+                    <%= form_with url: responses_path, method: :post, class: "mb-3" do |f| %>
+                      <%= f.hidden_field :player_id, value: current_player.id %>
+                      <%= f.hidden_field :question_id, value: question.id %>
+                      <div class="mb-3">
+                        <%= f.label :answer_text, "あなたの回答:", class: "form-label" %>
+                        <%= f.text_area :answer_text, class: "form-control", rows: 3, required: true %>
+                      </div>
+                      <%= f.submit "回答する", class: "btn btn-primary" %>
+                    <% end %>
+                  <% end %>
+                  
+                  <% if opponent_response = opponent.response_for(question) %>
+                    <div class="alert alert-info">
+                      相手の回答: <%= opponent_response.answer_text %>
+                    </div>
+                  <% else %>
+                    <div class="alert alert-secondary">
+                      相手はまだ回答していません
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          
+          <% if current_player.answered_all_questions? && opponent.answered_all_questions? %>
+            <div class="card mb-4">
+              <div class="card-header">
+                <h3>判定</h3>
+              </div>
+              <div class="card-body">
+                <p>すべての質問に回答しました。相手は人間ですか、それともAIですか？</p>
+                
+                <% if current_player.guess.present? %>
+                  <div class="alert alert-info">
+                    あなたの判定: <%= current_player.guess == "human" ? "人間" : "AI" %>
+                  </div>
+                  
+                  <% if opponent.guess.present? %>
+                    <div class="alert alert-info">
+                      相手の判定: <%= opponent.guess == "human" ? "人間" : "AI" %>
+                    </div>
+                    
+                    <div class="alert alert-<%= @room.game_result_for(current_player) == "勝ち" ? "success" : (@room.game_result_for(current_player) == "負け" ? "danger" : "warning") %>">
+                      <h4>結果: <%= @room.game_result_for(current_player) %></h4>
+                      <p>
+                        <% if current_player.is_ai && opponent.guess == "ai" %>
+                          相手はあなたをAIと正しく判定しました。
+                        <% elsif !current_player.is_ai && opponent.guess == "human" %>
+                          相手はあなたを人間と正しく判定しました。
+                        <% elsif !current_player.is_ai && opponent.guess == "ai" %>
+                          相手はあなたをAIと誤って判定しました。
+                        <% elsif current_player.is_ai && opponent.guess == "human" %>
+                          相手はあなたを人間と誤って判定しました。
+                        <% end %>
+                      </p>
+                      <%= link_to "トップに戻る", root_path, class: "btn btn-primary" %>
+                    </div>
+                  <% else %>
+                    <div class="alert alert-warning">
+                      相手の判定を待っています...
+                    </div>
+                  <% end %>
+                <% else %>
+                  <%= form_with url: player_path(current_player), method: :patch do |f| %>
+                    <div class="form-check mb-3">
+                      <%= f.radio_button :guess, "human", class: "form-check-input", required: true %>
+                      <%= f.label :guess_human, "人間", class: "form-check-label" %>
+                    </div>
+                    <div class="form-check mb-3">
+                      <%= f.radio_button :guess, "ai", class: "form-check-input" %>
+                      <%= f.label :guess_ai, "AI", class: "form-check-label" %>
+                    </div>
+                    <%= f.submit "判定する", class: "btn btn-primary" %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
