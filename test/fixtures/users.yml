@@ -1,13 +1,15 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  name: MyString
-  email: MyString
-  uid: MyString
-  provider: MyString
+  name: テストユーザー1
+  email: test1@example.com
+  uid: test_uid_1
+  provider: google_oauth2
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
 
 two:
-  name: MyString
-  email: MyString
-  uid: MyString
-  provider: MyString
+  name: テストユーザー2
+  email: test2@example.com
+  uid: test_uid_2
+  provider: google_oauth2
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
