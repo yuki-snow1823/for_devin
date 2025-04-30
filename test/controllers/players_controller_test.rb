@@ -2,9 +2,18 @@ require "test_helper"
 
 class PlayersControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = User.create(name: "テストユーザー", email: "test@example.com", uid: "123456", provider: "google_oauth2")
+    @user = User.create(
+      name: "テストユーザー", 
+      email: "test_player@example.com", 
+      uid: "123456", 
+      provider: "google_oauth2",
+      password: "password123",
+      password_confirmation: "password123"
+    )
     @room = Room.create(status: "active")
     @player = @room.players.create(user: @user, is_ai: false)
+    
+    sign_in @user
   end
 
   test "should update player guess" do
