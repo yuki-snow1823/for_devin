@@ -16,9 +16,9 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
     sign_in @user
   end
 
-  test "should get index" do
+  test "should get index and redirect to room" do
     get root_path
-    assert_response :success
+    assert_redirected_to room_path(Room.last)
   end
 
   test "should create room" do
