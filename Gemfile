@@ -26,9 +26,8 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
-# Google OAuth認証
-gem "omniauth-google-oauth2"
-gem "omniauth-rails_csrf_protection"
+# 認証
+gem "devise"
 gem "dotenv-rails"
 
 # Use Redis adapter to run Action Cable in production
