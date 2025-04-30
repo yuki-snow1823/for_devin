@@ -10,12 +10,16 @@ user1 = User.find_or_create_by!(email: "user1@example.com") do |u|
   u.name = "テストユーザー1"
   u.uid = "test_uid_1"
   u.provider = "google_oauth2"
+  u.password = "password123"
+  u.password_confirmation = "password123"
 end
 
 user2 = User.find_or_create_by!(email: "user2@example.com") do |u|
   u.name = "テストユーザー2"
   u.uid = "test_uid_2"
   u.provider = "google_oauth2"
+  u.password = "password123"
+  u.password_confirmation = "password123"
 end
 puts "テストユーザーを作成しました"
 

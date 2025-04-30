@@ -1,3 +1,4 @@
+=begin
 class SessionsController < ApplicationController
   def create
     user = User.find_or_create_by_auth(auth)
@@ -16,3 +17,4 @@ class SessionsController < ApplicationController
     request.env['omniauth.auth']
   end
 end
+=end

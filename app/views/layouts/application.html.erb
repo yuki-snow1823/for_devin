@@ -17,16 +17,19 @@
         <a class="navbar-brand" href="/">AI判定ゲーム</a>
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav ms-auto">
-            <% if current_user %>
+            <% if user_signed_in? %>
               <li class="nav-item">
                 <span class="nav-link"><%= current_user.name %> さん</span>
               </li>
               <li class="nav-item">
-                <%= button_to "ログアウト", logout_path, method: :delete, class: "btn btn-outline-danger" %>
+                <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn btn-outline-danger" %>
               </li>
             <% else %>
               <li class="nav-item">
-                <%= link_to "Googleでログイン", "/auth/google_oauth2", class: "btn btn-primary" %>
+                <%= link_to "ログイン", new_user_session_path, class: "btn btn-primary" %>
+              </li>
+              <li class="nav-item ms-2">
+                <%= link_to "新規登録", new_user_registration_path, class: "btn btn-outline-primary" %>
               </li>
             <% end %>
           </ul>
